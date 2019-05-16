@@ -1,0 +1,213 @@
+# coding=gbk
+import numpy as np
+from PIL import Image
+import matplotlib.pyplot as plt
+import cv2
+import math
+import pylab
+from skimage import data,filters,io
+'''
+img_test=np.array(Image.open('test2.bmp').convert('L'),'i')
+img2_test=plt.imread('test2.bmp')
+w=img_test.shape[0]
+h=img_test.shape[1]
+img_test_or=np.zeros([w,h],np.uint8)
+img_test_med3=np.zeros([w,h],np.uint8)
+img_test_med5=np.zeros([w,h],np.uint8)
+img_test_med7=np.zeros([w,h],np.uint8)
+'''
+
+'''
+for i in range(w):
+	for j in range(h):
+		img_test_med3[i,j]=img_test[i,j]
+
+for i in range(w):
+	for j in range(h):
+		img_test_med5[i,j]=img_test[i,j]
+
+for i in range(w):
+	for j in range(h):
+		img_test_med7[i,j]=img_test[i,j]
+
+					#medium filter 3x3
+for a in range(3,w-3):
+	for b in range(3,h-3):
+		med=[]
+		for a1 in range(3):
+			for b1 in range(3):
+				med.append(img_test[a-a1,b-b1])
+		img_test_med3[i,j]=np.median(med)
+					
+					#medium filter 5x5
+for a in range(5,w-5):
+	for b in range(5,h-5):
+		med=[]
+		for a1 in range(5):
+			for b1 in range(5):
+				med.append(img_test[a-a1,b-b1])
+		img_test_med5[i,j]=np.median(med)
+
+					#medium filter 7x7
+for a in range(7,w-7):
+	for b in range(7,h-7):
+		med=[]
+		for a1 in range(7):
+			for b1 in range(7):
+				med.append(img_test[a-a1,b-b1])
+		img_test_med7[i,j]=np.median(med)
+
+cv2.imshow('med filter 3',img_test_med3)
+cv2.waitKey()
+cv2.imshow('med filter 5',img_test_med5)
+cv2.waitKey()
+cv2.imshow('med filter 7',img_test_med7)
+cv2.waitKey()
+
+plt.imsave("med filter 3",img_test_med3)
+plt.imsave("med filter 5",img_test_med5)
+plt.imsave("med filter 7",img_test_med7)
+
+segma=1.5
+gs_matrix3=np.zeros([3,3])
+gs_matrix5=np.zeros([5,5])
+gs_matrix7=np.zeros([7,7])
+
+#gs_matrix3
+for a3 in range(3):
+	for b3 in range(3):
+		gs_matrix3[a3,b3]=(1/(2*math.pi*segma**2)*np.exp(-(((a3-2)**2+(b3-2)**2))/(2*segma**2)))
+
+#gs_matrix5
+for a5 in range(5):
+	for b5 in range(5):
+		gs_matrix5[a5,b5]=(1/(2*math.pi*segma**2)*np.exp(-(((a5-3)**2+(b5-3)**2))/(2*segma**2)))
+
+#gs_matrix7
+for a7 in range(7):
+	for b7 in range(7):
+		gs_matrix7[a7,b7]=(1/(2*math.pi*segma**2)*np.exp(-(((a7-4)**2+(b7-4)**2))/(2*segma**2)))
+
+res_test2=cv2.filter2D(img2_test,-1,gs_matrix3)
+res_test2_gs5=cv2.filter2D(img2_test,-1,gs_matrix5)
+res_test2_gs7=cv2.filter2D(img2_test,-1,gs_matrix7)
+plt.imsave("res_test_gs3.jpg",res_test2)
+plt.imsave("res_test_gs5.jpg",res_test2_gs5)
+plt.imsave("res_test_gs7.jpg",res_test2_gs7)
+'''
+
+def USM(img_test3):
+	w3=img_test3.shape[0]
+	h3=img_test3.shape[1]
+	img_test3_USM=np.zeros([w3,h3],np.uint8)
+	
+	for i in range(w3):
+		for j in range(h3):
+			img_test3_USM[i,j]=img_test3[i,j]
+	matrix_USM=np.matrix( [ [-1,-1,-1], [-1,8,-1], [-1,-1,-1]] )
+	img_test3_USM_end=cv2.filter2D(img_test3_USM,-1,matrix_USM)
+	plt.imsave("img_test3_USM_end.jpg",img_test3_USM_end)
+
+	img_test3_USM_end_open=cv2.imread("img_test3_USM_end.jpg")
+	plt.imshow(img_test3_USM_end_open,cmap='gray')
+	plt.show()
+
+def sobel(image_sobel):
+	cv2.imshow("Original", image_sobel)
+
+	gray = cv2.cvtColor(image_sobel, cv2.COLOR_BGR2GRAY)
+	cv2.imshow("Gray", gray)
+
+	sobelx = cv2.Sobel(gray, cv2.CV_64F, 1, 0)
+	sobely = cv2.Sobel(gray, cv2.CV_64F, 0, 1)
+
+	sobelx = np.uint8(np.absolute(sobelx))
+	sobely = np.uint8(np.absolute(sobely))
+	sobelcombine = cv2.bitwise_or(sobelx,sobely)
+	#display two images in a figure
+	cv2.imshow("Edge detection by Sobel", np.hstack([gray,sobelx,sobely, sobelcombine]))
+	cv2.waitKey()
+	cv2.imwrite("1_edge_by_sobel.jpg", np.hstack([gray,sobelx,sobely, sobelcombine]))
+	cv2.waitKey()
+
+def Lap(image_Lap):
+
+	cv2.imshow("Original", image_Lap)
+
+	gray = cv2.cvtColor(image_Lap, cv2.COLOR_BGR2GRAY)
+	cv2.imshow("Gray", gray)
+
+	lap = cv2.Laplacian(gray, cv2.CV_64F)
+	lap = np.uint8(np.absolute(lap))
+
+	cv2.imshow("Edge detection by Laplacaian", np.hstack([lap, gray]))
+	cv2.waitKey()
+	cv2.imwrite("1_edge_by_laplacian.jpg", np.hstack([gray, lap]))
+
+def Canny(image_canny):
+
+	cv2.imshow("Original", image_canny)
+
+	gray = cv2.cvtColor(image_canny, cv2.COLOR_BGR2GRAY)
+	cv2.imshow("Gray", gray)
+
+	canny = cv2.Canny(gray, 30, 150)
+
+	canny = np.uint8(np.absolute(canny))
+	cv2.imshow("Edge detection by Canny", np.hstack([gray,canny]))
+	cv2.waitKey()
+	cv2.imwrite("1_edge_by_canny.jpg", np.hstack([gray,canny]))
+
+
+img_test3=np.array(Image.open('test4.bmp').convert('L'),'i')
+print(1)
+image_sobel = cv2.imread('test4.bmp')
+print(2)
+image_Lap= cv2.imread('test4.bmp')
+print(3)
+image_canny = cv2.imread('test4.bmp')
+print(4)
+
+'''
+sobel(image_sobel)
+USM(img_test3)
+Lap(image_Lap)
+Canny(image_canny)
+'''
+#gray=np.array(Image.open('test4.bmp').convert('L'),'i')
+
+edges = Canny(image_canny)
+
+plt.xticks([])
+plt.yticks([])
+
+#hough transform
+
+lines1 = cv2.HoughLines(edges,1,np.pi/180,160)
+
+lines2 = lines1[:,0,:]
+
+for rho,theta in lines2[:]: 
+	a = np.cos(theta)
+
+	b = np.sin(theta)
+
+	x0 = a*rho
+
+	y0 = b*rho
+
+	x1 = int(x0 + 1000*(-b))
+
+	y1 = int(y0 + 1000*(a))
+
+	x2 = int(x0 - 1000*(-b))
+
+	y2 = int(y0 - 1000*(a)) 
+
+	cv2.line(img,(x1,y1),(x2,y2),(255,0,0),1)
+
+ 
+
+plt.subplot(122),plt.imshow(img,)
+
+plt.xticks([]),plt.yticks([])
